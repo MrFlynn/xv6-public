@@ -14,10 +14,15 @@ sys_fork(void)
 }
 
 int
-sys_exit(int)
+sys_exit(void)
 {
-  exit(0); // maybe
-  return 0;  // not reached
+  int status;
+  if (argint(0, &status) < 0) {
+    return -1;
+  }
+
+  exit(status);
+  return 0;
 }
 
 int
