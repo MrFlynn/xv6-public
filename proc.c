@@ -317,6 +317,48 @@ wait(int *status)
   }
 }
 
+int
+waitpid(int pid, int *status, int options) {
+  struct proc *p;
+  int procexists;
+  struct proc *curproc = myproc();
+  
+  acquire(&ptable.lock);
+  for(;;){
+    // Scan through table looking for exited children.
+    procexists = 0;
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->pid != pid)
+        continue;
+      procexists = 1;
+      if(p->state == ZOMBIE){
+        // Found one.
+        kfree(p->kstack);
+        p->kstack = 0;
+        freevm(p->pgdir);
+        p->parent = 0;
+        p->name[0] = 0;
+        p->killed = 0;
+        if (status) {
+          *status = p->status; // Returns child exit status in arg
+        }
+        p->state = UNUSED;
+        release(&ptable.lock);
+        return p->pid;
+      }
+    }
+
+    // No point waiting if we don't have any children.
+    if(!procexists || curproc->killed){
+      release(&ptable.lock);
+      return -1;
+    }
+
+    // Wait for children to exit.  (See wakeup1 call in proc_exit.)
+    sleep(curproc, &ptable.lock);  //DOC: wait-sleep
+  }
+}
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
