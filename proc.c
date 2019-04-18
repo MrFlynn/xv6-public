@@ -320,7 +320,7 @@ wait(int *status)
 int
 waitpid(int pid, int *status, int options) {
   struct proc *p;
-  int procexists;
+  int procexists, pid_save;
   struct proc *curproc = myproc();
   
   acquire(&ptable.lock);
@@ -344,7 +344,9 @@ waitpid(int pid, int *status, int options) {
         }
         p->state = UNUSED;
         release(&ptable.lock);
-        return p->pid;
+        pid_save = p->pid;
+        p->pid = 0;
+        return pid_save;
       }
     }
 
