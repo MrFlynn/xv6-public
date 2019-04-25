@@ -330,7 +330,14 @@ waitpid(int pid, int *status, int options) {
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->pid != pid)
         continue;
+
       procexists = 1;
+
+      if (options == WNOHANG && p->state != ZOMBIE) {
+        release(&ptable.lock);
+        return 0;
+      }
+
       if(p->state == ZOMBIE){
         // Found one.
         kfree(p->kstack);
