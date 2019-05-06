@@ -382,7 +382,9 @@ scheduler(void)
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
-  
+ 
+  int high_priority = 201;
+
   for(;;){
     // Enable interrupts on this processor.
     sti();
@@ -392,22 +394,41 @@ scheduler(void)
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
-
+      //High priority 
+      if(p->priority < high_priority){
+	high_priority = p->priorty;
+	
+	}
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
-      c->proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
+     // c->proc = p;
+     // switchuvm(p);
+     // p->state = RUNNING;
 
-      swtch(&(c->scheduler), p->context);
-      switchkvm();
+     // swtch(&(c->scheduler), p->context);
+     // switchkvm();
 
       // Process is done running for now.
       // It should have changed its p->state before coming back.
-      c->proc = 0;
+     // c->proc = 0;
     }
+    //loop in process talbe and switch to high priorty process
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+	if(p->state != RUNNABLE)
+ 	  continue;
+	if(p->priorty == high_priorty){
+	//insert code here 
+		proc = p;
+		switchuvm(p);//switch tss and h/w page table to correspond to process p
+		p->state = RUNNING;
+		swtch(&cpu->scheduler, p->context);
+		switchkvm();//siwtch to kernal page table
+		proc = 0;//process done change p->state before going back
+	}
+	}
     release(&ptable.lock);
+
 
   }
 }
