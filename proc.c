@@ -469,6 +469,22 @@ yield(void)
   release(&ptable.lock);
 }
 
+// Allow process to set it's own priority (lab 2).
+int
+setpriority(int priority) {
+  struct proc *curproc = myproc();
+  
+  // Limit the range of priorities between 0 and 31 with 31 being the highest.
+  if (priority < 0) {
+    priority = 0;
+  } else if (priority > 31) {
+    priority = 31;
+  }
+
+  curproc->priority = priority;
+  return curproc->priority;
+}
+
 // A fork child's very first scheduling by scheduler()
 // will swtch here.  "Return" to user space.
 void
