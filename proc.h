@@ -51,6 +51,7 @@ struct proc {
   char name[16];               // Process name (debugging)
   int status;                  // Process exit status.
   int priority;                // Process priority. Used by scheduler.
+  int start;                   // Start time of current process.
 };
 
 // Process memory is laid out contiguously, low addresses first:

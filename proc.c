@@ -7,6 +7,8 @@
 #include "proc.h"
 #include "spinlock.h"
 
+#define PRINT_TURNAROUND_EXIT 1
+
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -112,6 +114,10 @@ found:
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
   p->priority = 10;
+
+  acquire(&tickslock);
+  p->start = ticks;
+  release(&tickslock);
 
   return p;
 }
@@ -235,6 +241,12 @@ exit(int status)
   if(curproc == initproc)
     panic("init exiting");
 
+#ifdef PRINT_TURNAROUND_EXIT
+  acquire(&tickslock);
+  cprintf("Turnaround time (in ticks): %d\n", ticks - curproc->start);
+  release(&tickslock);
+#endif
+
   // Close all open files.
   for(fd = 0; fd < NOFILE; fd++){
     if(curproc->ofile[fd]){
@@ -264,6 +276,7 @@ exit(int status)
 
   // Store exit status.
   curproc->status = status;
+
 
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
@@ -395,7 +408,7 @@ scheduler(void)
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE) {
         // Increase the priority if the process is sleeping.
-        clamppriority(p->priority - 1, p);
+        // clamppriority(p->priority - 1, p);
         continue;
       } 
 
@@ -409,7 +422,7 @@ scheduler(void)
       }
     
       // Decrease priority if the process is schedule.
-      clamppriority(highest->priority + 1, p);
+      // clamppriority(highest->priority + 1, p);
       
       // Set the current process to the highest avilable and switch to it.
       c->proc = highest;
