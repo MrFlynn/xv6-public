@@ -111,6 +111,7 @@ found:
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
+  p->priority = 10;
 
   return p;
 }
@@ -379,12 +380,12 @@ waitpid(int pid, int *status, int options) {
 void
 scheduler(void)
 {
-  struct proc *p;
+  // p and n are iterators. highest is used to hold the discovered process with
+  // the highest priority.
+  struct proc *p, *n, *highest;
   struct cpu *c = mycpu();
   c->proc = 0;
  
-  int high_priority = 201;
-
   for(;;){
     // Enable interrupts on this processor.
     sti();
@@ -392,44 +393,30 @@ scheduler(void)
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
+      if(p->state != RUNNABLE) {
         continue;
-      //High priority 
-      if(p->priority < high_priority){
-	high_priority = p->priorty;
-	
-	}
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
-     // c->proc = p;
-     // switchuvm(p);
-     // p->state = RUNNING;
+      } 
 
-     // swtch(&(c->scheduler), p->context);
-     // switchkvm();
+      highest = p;
 
-      // Process is done running for now.
-      // It should have changed its p->state before coming back.
-     // c->proc = 0;
+      // Search for highest priority process in the process table. 
+      for (n = ptable.proc; n < &ptable.proc[NPROC]; n++) {
+        if (n->state == RUNNABLE && n->priority < highest->priority) {
+          highest = n;
+        }
+      }
+    
+      // Set the current process to the highest avilable and switch to it.
+      c->proc = highest;
+      switchuvm(highest);
+      highest->state = RUNNING;
+    
+      swtch(&(c->scheduler), highest->context);
+      switchkvm();
+
+      c->proc = 0;
     }
-    //loop in process talbe and switch to high priorty process
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-	if(p->state != RUNNABLE)
- 	  continue;
-	if(p->priorty == high_priorty){
-	//insert code here 
-		proc = p;
-		switchuvm(p);//switch tss and h/w page table to correspond to process p
-		p->state = RUNNING;
-		swtch(&cpu->scheduler, p->context);
-		switchkvm();//siwtch to kernal page table
-		proc = 0;//process done change p->state before going back
-	}
-	}
     release(&ptable.lock);
-
-
   }
 }
 
