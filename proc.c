@@ -394,6 +394,8 @@ scheduler(void)
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE) {
+        // Increase the priority if the process is sleeping.
+        clamppriority(p->priority - 1, p);
         continue;
       } 
 
@@ -406,11 +408,14 @@ scheduler(void)
         }
       }
     
+      // Decrease priority if the process is schedule.
+      clamppriority(highest->priority + 1, p);
+      
       // Set the current process to the highest avilable and switch to it.
       c->proc = highest;
       switchuvm(highest);
       highest->state = RUNNING;
-    
+      
       swtch(&(c->scheduler), highest->context);
       switchkvm();
 
@@ -460,7 +465,13 @@ yield(void)
 int
 setpriority(int priority) {
   struct proc *curproc = myproc();
-  
+ 
+  clamppriority(priority, curproc); 
+  return curproc->priority;
+}
+
+int 
+clamppriority(int priority, struct proc* p) {
   // Limit the range of priorities between 0 and 31 with 31 being the highest.
   if (priority < 0) {
     priority = 0;
@@ -468,9 +479,10 @@ setpriority(int priority) {
     priority = 31;
   }
 
-  curproc->priority = priority;
-  return curproc->priority;
+  p->priority = priority;
+  return p->priority;
 }
+
 
 // A fork child's very first scheduling by scheduler()
 // will swtch here.  "Return" to user space.
