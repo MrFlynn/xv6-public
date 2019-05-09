@@ -7,8 +7,6 @@
 #include "proc.h"
 #include "spinlock.h"
 
-#define PRINT_TURNAROUND_EXIT 1
-
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
