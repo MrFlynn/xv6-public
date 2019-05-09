@@ -124,3 +124,10 @@ sys_setpriority(void)
 
   return setpriority(priority);
 }
+
+// Entrypoint for getting process priority (lab 2).
+int
+sys_getpriority(void)
+{
+  return getpriority();
+}

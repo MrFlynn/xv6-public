@@ -506,6 +506,11 @@ clamppriority(int priority, struct proc* p) {
   return p->priority;
 }
 
+int
+getpriority(void) {
+  struct proc *curproc = myproc();
+  return curproc->priority;
+}
 
 // A fork child's very first scheduling by scheduler()
 // will swtch here.  "Return" to user space.
