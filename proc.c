@@ -395,7 +395,7 @@ scheduler(void)
 {
   // p and n are iterators. highest is used to hold the discovered process with
   // the highest priority.
-  struct proc *p, *n, *highest;
+  struct proc *p, *n, *highest, *i;
   struct cpu *c = mycpu();
   c->proc = 0;
  
@@ -423,7 +423,17 @@ scheduler(void)
     
       // Decrease priority if the process is schedule.
       // clamppriority(highest->priority + 1, p);
-      
+      //agubg process
+      clamppriority(highest->priority + 1, highest ); // decrease highest priority
+      for (i = ptable.proc; i < &ptable.proc[NPROC]; i++){
+	if(i->state != RUNNABLE){
+	 continue;
+	}
+	if(i != highest){
+	 clamppriority(highest->priority - 1, highest);//increases running priorities 
+	}
+      }
+ 
       // Set the current process to the highest avilable and switch to it.
       c->proc = highest;
       switchuvm(highest);
