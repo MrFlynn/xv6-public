@@ -408,7 +408,6 @@ scheduler(void)
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE) {
         // Increase the priority if the process is sleeping.
-        // clamppriority(p->priority - 1, p);
         continue;
       } 
 
@@ -421,17 +420,14 @@ scheduler(void)
         }
       }
     
-      // Decrease priority if the process is schedule.
-      // clamppriority(highest->priority + 1, p);
-      //agubg process
-      clamppriority(highest->priority + 1, highest ); // decrease highest priority
+      clamppriority(highest->priority + 1, highest); // decrease highest priority
       for (i = ptable.proc; i < &ptable.proc[NPROC]; i++){
-	if(i->state != RUNNABLE){
-	 continue;
-	}
-	if(i != highest){
-	 clamppriority(highest->priority - 1, highest);//increases running priorities 
-	}
+      	if(i->state != RUNNABLE){
+	        continue;
+	      }
+	      if(i != highest){
+      	  clamppriority(i->priority - 1, i); //increases runnable priorities 
+	      }
       }
  
       // Set the current process to the highest avilable and switch to it.
