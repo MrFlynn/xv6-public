@@ -420,12 +420,12 @@ scheduler(void)
     
       clamppriority(highest->priority + 1, highest); // decrease highest priority
       for (i = ptable.proc; i < &ptable.proc[NPROC]; i++){
-      	if(i->state != RUNNABLE){
-	        continue;
-	      }
-	      if(i != highest){
-      	  clamppriority(i->priority - 1, i); //increases runnable priorities 
-	      }
+        if(i->state != RUNNABLE){
+          continue;
+        }
+        if(i != highest){
+          clamppriority(i->priority - 1, i); //increases runnable priorities 
+        }
       }
  
       // Set the current process to the highest avilable and switch to it.
