@@ -77,7 +77,21 @@ trap(struct trapframe *tf)
             cpuid(), tf->cs, tf->eip);
     lapiceoi();
     break;
+  case T_PGFLT: ;
+    uint faultaddr = rcr2();
+    struct proc *curproc = myproc();
 
+    if (faultaddr >= STACKTOP - ((PGSIZE * (curproc->numstackpages + 1)) + 1)) {
+      if ((allocuvm(curproc->pgdir, PGROUNDDOWN(faultaddr), PGROUNDDOWN(faultaddr) + 1)) == 0) {
+        panic("OUT OF MEMORY!");
+      } else {
+        curproc->numstackpages += 1;
+      }
+    } else {
+      panic("INVALID PAGE ACCESS!");
+    }
+
+    break;
   //PAGEBREAK: 13
   default:
     if(myproc() == 0 || (tf->cs&3) == 0){
