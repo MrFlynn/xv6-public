@@ -52,6 +52,7 @@ struct proc {
   int status;                  // Process exit status.
   int priority;                // Process priority. Used by scheduler.
   int start;                   // Start time of current process.
+  uint numstackpages;          // Number of pages in the process stack.
 };
 
 // Process memory is laid out contiguously, low addresses first:
