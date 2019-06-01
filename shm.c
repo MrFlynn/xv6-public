@@ -34,7 +34,8 @@ int shm_open(int id, char **pointer) {
   //table size = 64
   for(i = 0; i < 64; ++i){
     if(shm_table.shm_pages[i].id == id){
-      shm_table.shm_pages[i].refcnt++;//incrase reference count, then do mappages
+      //increase reference count, then do mappages
+      shm_table.shm_pages[i].refcnt++;
       mappages(myproc()->pgdir, myproc()->sz, PGSIZE, V2P(shm_table.shm_pages[i].frame), PTE_W|PTE_U);
       //*pointer=(char *)va;
       *pointer = (char*) myproc()->sz;
@@ -45,7 +46,12 @@ int shm_open(int id, char **pointer) {
     }
 
   }
-
+  //Case 2 If shared memory id is not found
+  for(i = 0; i < 64; ++ i){
+    if(shm_table.shm_pages[i].id != id){
+      
+    }
+  }
 relase(&(shm_table.lock));//if somehow it never hits the if statement
 return -1; //added to remove compiler warning -- you should decide what to return
 }
