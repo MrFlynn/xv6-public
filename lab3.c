@@ -26,6 +26,12 @@ main(int argc, char *argv[])
   n = atoi(argv[1]);
   printf(1, "Lab 3: Recursing %d levels\n", n);
   m = recurse(n);
-  printf(1, "Lab 3: Yielded a value of %d\n", m);
+
+  if (fork() == 0) {    
+    printf(1, "Lab 3: Child yielded a value of %d\n", m);
+  } else  {
+    wait(0);
+    printf(1, "Lab 3: Parent yielded a value of %d\n", m);
+  }
   exit(0);
 }

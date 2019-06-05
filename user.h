@@ -26,6 +26,8 @@ int sleep(int);
 int uptime(void);
 int setpriority(int);
 int getpriority(void);
+int shm_open(int, char**);
+int shm_close(int);
 
 // ulib.c
 int stat(const char*, struct stat*);
